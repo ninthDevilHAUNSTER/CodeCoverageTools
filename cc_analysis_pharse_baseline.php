@@ -1,6 +1,8 @@
 <?php
 
-require 'admin/vendor/autoload.php';
+
+
+require 'vendor/autoload.php';
 require 'utils.php';
 require 'CommonLineVisitor.php';
 
@@ -45,7 +47,7 @@ WHERE file_name = ?
 }
 
 
-function get_file_coverage($file, $visited_lines, &$TOTAL_FILE_LINE_CNT, &$TOTAL_COVERED_LINE_CNT, $kind = 2)
+function get_file_coverage($test_group,$file, $visited_lines, &$TOTAL_FILE_LINE_CNT, &$TOTAL_COVERED_LINE_CNT, $kind = ParserFactory::PREFER_PHP5)
 {
     $code = file_get_contents($file);
     $traverser = new NodeTraverser();
@@ -54,21 +56,21 @@ function get_file_coverage($file, $visited_lines, &$TOTAL_FILE_LINE_CNT, &$TOTAL
     $parser = (new ParserFactory())->create($kind);
     try {
         $ast = $parser->parse($code);
-    } catch (\Error $error) {
-        echo "$error" . PHP_EOL;
+    } catch (Exception $e) {
+        echo $e->getMessage();
         return false;
     }
     $traverser->traverse($ast);
     $result_matrix = $visitor->getCodeCoverage();
     $TOTAL_FILE_LINE_CNT += $result_matrix['software_line_cnt'];
     $TOTAL_COVERED_LINE_CNT += $result_matrix['visited_line_cnt'];
-    file_put_contents("result.log", "FILE :: " . $file . "CODE COVERAGE " . $result_matrix['code_coverage'] * 100 . "%" . PHP_EOL, FILE_APPEND);
+    file_put_contents("$test_group.log", "FILE :: " . $file . "  CODE COVERAGE " . $result_matrix['code_coverage'] * 100 . "%" . PHP_EOL, FILE_APPEND);
     return true;
 }
 
 function get_total_coverage($source_root, $test_group, $ignore_dir = array())
 {
-    unlink("result.log");
+    @unlink("$test_group.log");
     print "Analyzing " . $test_group . " with source root" . $source_root;
     $files = [];
     getDirContents($source_root, $files, ["php"], $ignore_dir);
@@ -76,11 +78,19 @@ function get_total_coverage($source_root, $test_group, $ignore_dir = array())
     $covered_lines = 0;
     foreach ($files as $file) {
         $visit_lines = search_coverage($file, $test_group);
-        get_file_coverage($file, $visit_lines, $total_lines, $covered_lines);
+        get_file_coverage($test_group,$file, $visit_lines, $total_lines, $covered_lines);
     }
-    file_put_contents("result.log", "Total software cnt :: " . $total_lines . PHP_EOL
+    file_put_contents("$test_group.log", "Total software cnt :: " . $total_lines . PHP_EOL
         . "Total visited cnt ::  " . $covered_lines . PHP_EOL
         . "software coverage ::  " . $covered_lines / $total_lines . PHP_EOL, FILE_APPEND);
 }
 
-get_total_coverage('D:\wamp\php_box\piwigo\Piwigo-2.8.3', 'piwigo283_robercrwaler_login_superadmin', ["_data\\", "language\\", "install\\"]);
+# get_total_coverage('D:\wamp\php_box\piwigo\Piwigo-2.8.3', 'piwigo283_robercrwaler_login_superadmin', ["_data\\", "language\\", "install\\"]);
+// get_total_coverage('D:\wamp\mantisbt', 'mantisbt1215_robercrwaler_login_superadmin', ["install\\"]);
+
+// get_total_coverage('D:\wamp\php_box\piwigo\Piwigo-2.9.2', 'piwigo292_robercrwaler_login_superadmin', ["_data\\", "language\\", "install\\"]);
+
+$param_arr = getopt('d:g:');
+echo "GET ARG INPUT";
+print_r($param_arr);
+get_total_coverage($param_arr['d'],$param_arr['g']);

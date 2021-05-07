@@ -1,6 +1,6 @@
 <?php
 
-require 'admin/vendor/autoload.php';
+require 'vendor/autoload.php';
 
 use PhpParser\Error;
 use PhpParser\NodeDumper;
@@ -51,7 +51,7 @@ class CommonLineVisitor extends NodeVisitorAbstract
             "file_name" => $this->file_name,
             "software_line_cnt" => count($_real_software_line),
             "visited_line_cnt" => count($_real_visited_line),
-            "code_coverage" => round(count($_real_visited_line) / count($_real_software_line), 2),
+            "code_coverage" => round(count($_real_visited_line) / count($_real_software_line), 4),
         );
     }
 

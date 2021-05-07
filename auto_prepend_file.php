@@ -4,6 +4,7 @@
 // 增加命令行传参脚本
 error_reporting(E_ALL);
 ini_set('error_reporting', E_ALL);
+ini_set('memory_limit', '-1');
 
 // 在触发到特定行的时候，把相应的变量输出出来
 //ini_set("xdebug.collect_params", 4);

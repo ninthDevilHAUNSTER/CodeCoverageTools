@@ -1,5 +1,5 @@
 <?php
-
+ini_set('memory_limit', '-1');
 function getDirs($dir, &$results = array())
 {
     $files = scandir($dir);
